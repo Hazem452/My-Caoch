@@ -1,55 +1,48 @@
-import { useState, useEffect, useMemo } from "react";
+onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                placeholder="تحدث مع مدربك..." 
+              />
+              <button 
+                style={{ padding: "12px 24px", backgroundColor: "#0ea5e9", color: "#fff", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}
+                onClick={sendMessage}
+              >إرسال</button>
+            </div>
+          </section>
 
-export default function Home() { 
-  const [weight, setWeight] = useState(120); 
-  const [goal] = useState(80);
-  const [foods, setFoods] = useState([]); 
-  const [foodName, setFoodName] = useState(""); 
-  const [foodCalories, setFoodCalories] = useState(0);
-  const [water, setWater] = useState(0); 
-  const [fastingStart, setFastingStart] = useState(null);
-  const [chat, setChat] = useState([ { role: "assistant", content: "أنا مدربك الذكي. اسألني أي حاجة." } ]);
-  const [msg, setMsg] = useState("");
+          {/* Sidebar Stats */}
+          <aside style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            
+            {/* Calories Card */}
+            <div style={{ backgroundColor: "#1e293b", borderRadius: "15px", padding: "15px", borderRight: "4px solid #f59e0b" }}>
+              <h4 style={{ margin: "0 0 10px 0", color: "#f59e0b" }}>🔥 السعرات</h4>
+              <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>{totalCalories} <span style={{ fontSize: "0.9rem", color: "#94a3b8" }}>سعرة</span></div>
+            </div>
 
-  const totalCalories = useMemo( () => foods.reduce((s, f) => s + f.calories, 0), [foods] );
-  const fastingHours = useMemo(() => { if (!fastingStart) return 0; return (Date.now() - fastingStart) / 3600000; }, [fastingStart]);
+            {/* Fasting Card */}
+            <div style={{ backgroundColor: "#1e293b", borderRadius: "15px", padding: "15px", borderRight: "4px solid #8b5cf6" }}>
+              <h4 style={{ margin: "0 0 10px 0", color: "#8b5cf6" }}>⏱️ الصيام</h4>
+              <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>{fastingHours} <span style={{ fontSize: "0.9rem", color: "#94a3b8" }}>ساعة</span></div>
+              <button 
+                onClick={() => setFastingStart(fastingStart ? null : Date.now())}
+                style={{ marginTop: "10px", width: "100%", padding: "8px", borderRadius: "5px", border: "none", backgroundColor: fastingStart ? "#ef4444" : "#8b5cf6", color: "#fff", cursor: "pointer" }}
+              >
+                {fastingStart ? "إنهاء الصيام" : "ابدأ الصيام"}
+              </button>
+            </div>
 
-  const addFood = () => { if (!foodName || !foodCalories) return; setFoods([...foods, { name: foodName, calories: Number(foodCalories) }]); setFoodName(""); setFoodCalories(0); };
+            {/* Food Log Quick Add */}
+            <div style={{ backgroundColor: "#1e293b", borderRadius: "15px", padding: "15px" }}>
+              <h4 style={{ margin: "0 0 10px 0", color: "#10b981" }}>🥗 أضف وجبة</h4>
+              <input style={{ width: "100%", marginBottom: "10px", padding: "8px", borderRadius: "5px", border: "none", backgroundColor: "#334155", color: "#fff" }} placeholder="اسم الأكلة" value={foodName} onChange={e => setFoodName(e.target.value)} />
+              <input style={{ width: "100%", marginBottom: "10px", padding: "8px", borderRadius: "5px", border: "none", backgroundColor: "#334155", color: "#fff" }} type="number" placeholder="السعرات" value={foodCalories} onChange={e => setFoodCalories(e.target.value)} />
+              <button 
+                onClick={() => { setFoods([...foods, { name: foodName, calories: Number(foodCalories) }]); setFoodName(""); setFoodCalories(0); }}
+                style={{ width: "100%", padding: "8px", borderRadius: "5px", border: "none", backgroundColor: "#10b981", color: "#fff", cursor: "pointer" }}
+              >إضافة</button>
+            </div>
 
-  const sendMessage = async () => { 
-    if (!msg) return;
-    const userMsg = { role: "user", content: msg }; 
-    setChat([...chat, userMsg]);
-    const res = await fetch("/api/chat", { 
-      method: "POST", 
-      headers: { "Content-Type": "application/json" }, 
-      body: JSON.stringify({ message: msg, state: { weight, goal, calories: totalCalories, fastingHours, water } }) 
-    }); 
-    const data = await res.json(); 
-    const aiMsg = { role: "assistant", content: data.reply }; 
-    setChat(prev => [...prev, aiMsg]); 
-    setMsg(""); 
-  };
-
-  return ( 
-    <div style={{ padding: 20, maxWidth: 600, margin: "auto", fontFamily: "sans-serif" }}> 
-      <h1>AI Fat Loss Coach</h1>
-      <div style={{ border: "1px solid #ccc", padding: 10, height: 300, overflow: "auto", marginBottom: 10 }}> 
-        {chat.map((c, i) => ( <div key={i} style={{ color: c.role === "assistant" ? "blue" : "black", marginBottom: 10 }}> <strong>{c.role === "assistant" ? "AI:" : "You:"}</strong> {c.content} </div> ))} 
-      </div> 
-      <input style={{ width: '80%' }} value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="اسأل مدربك..." /> 
-      <button onClick={sendMessage}>Send</button> 
-      <hr /> 
-      <h3>Food Log</h3> 
-      <input placeholder="اسم الأكلة" value={foodName} onChange={(e) => setFoodName(e.target.value)} /> 
-      <input type="number" placeholder="السعرات" value={foodCalories} onChange={(e) => setFoodCalories(e.target.value)} /> 
-      <button onClick={addFood}>Add</button> 
-      <p>Total Calories: {totalCalories}</p> 
-      <hr /> 
-      <h3>Fasting Tracker</h3> 
-      <button onClick={() => setFastingStart(Date.now())}>Start Fasting</button> 
-      <button onClick={() => setFastingStart(null)}>Stop</button> 
-      <p>{fastingHours.toFixed(1)} hours fasted</p> 
-    </div> 
-  ); 
+          </aside>
+        </div>
+      </div>
+    </div>
+  );
 }
