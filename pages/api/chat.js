@@ -8,19 +8,19 @@ export default async function handler(req, res) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": Bearer ${process.env.GROQ_API_KEY},
+        "Authorization": "Bearer " + process.env.GROQ_API_KEY
       },
       body: JSON.stringify({
         model: "llama3-8b-8192",
         messages: [
           {
             role: "system",
-            content: "أنت مدرب محترف لخسارة الوزن والصيام المتقطع. قدم نصائح قصيرة وعملية بناءً على حالة المستخدم. أجب باللغة العربية دائماً.",
+            content: "أنت مدرب محترف لخسارة الوزن والصيام المتقطع. قدم نصائح قصيرة وعملية بناءً على حالة المستخدم. أجب باللغة العربية دائماً."
           },
           {
             role: "user",
-            content: حالة المستخدم: الوزن=${state.weight}, الهدف=${state.goal}, السعرات=${state.calories}, ساعات الصيام=${state.fastingHours}, الماء=${state.water}. السؤال: ${message},
-          },
+            content: "حالة المستخدم: الوزن=" + state.weight + "، الهدف=" + state.goal + "، السعرات=" + state.calories + "، ساعات الصيام=" + state.fastingHours + "، الماء=" + state.water + ". السؤال: " + message
+          }
         ],
       }),
     });
